@@ -1,6 +1,6 @@
-# Cognasium India: international debating ad page (one screen, no scroll)
+# Cognasium India: international debating ad page
 
-A **single, non-scrolling page** for the Meta ad ("Already debating at school? Take it international.").
+A **short page** for the Meta ad ("Already debating at school? Take it international.").
 It's a very short version of https://cognasiumindia.com/ in the same yellow and navy design, with one programme (international debating), all testimonials, our students' photos and one big WhatsApp button.
 Why it exists (from the Loom review): the long main site gave parents too many choices, so the ad clicks weren't turning into leads.
 
@@ -12,30 +12,36 @@ Why it exists (from the Loom review): the long main site gave parents too many c
 
 ---
 
-## What's on the screen (top to bottom)
-1. **Yellow hero** (same style as the main site): logo, "Main website" link, LIVE ONLINE / INTERNATIONAL DEBATING chips, the headline "Already debating at school?" with the navy "Take it international." box
-2. **Navy proof bar:** World Champion trained by us (WSDC 2025) · APD · BPD · WSDC formats · Team + tournament, we register you
-3. **Our students' wins:** sliding Wall of Fame posters (the kids' achievements). This is the part that shrinks on smaller screens.
-4. **"Which level is your child?"** (optional): Beginner / School debater / Advanced
-5. **Big green 3D "Message us on WhatsApp" button** (lifts on hover, presses on tap, shine loop, small nudge every few seconds)
-6. **All 5 testimonials** with their photos: a row of faces + a rotating quote (every 4.5 s, pauses on touch or hover, tap a face to jump to it)
-7. Footer: "Visit our main website", "Nothing you tap here is stored.", ©
+## Layout
+**Screen 1: everything needed to convert, with no scrolling on any phone or desktop:**
+1. **Yellow hero** (same style as the main site): logo, "Main website" link, LIVE ONLINE / INTERNATIONAL DEBATING chips, the headline "Already debating at school?" with the navy "Take it international." box, and one supporting line (hidden on very short screens)
+2. **Navy proof bar:** World Champion, trained by us · APD · BPD · WSDC formats · Team + tournament, we register you
+3. **"Which level is your child?"** (optional): Beginner / School debater / Advanced
+4. **Big green 3D "Message us on WhatsApp" button** + "Usually the quickest way to reach us"
+5. **All 5 testimonials:** overlapping photo faces + a rotating quote (every 4.5 s, pauses on touch or hover, tap a face to jump to it)
+6. "See our students' wins ↓"
 
-- **Phones:** the page fills the screen exactly.
-- **Desktop:** a phone-width card in the centre of a navy background.
+**Below the fold (about 1½ more screens on a phone):**
+7. **Our students' wins:** a swipe gallery of the 6 Wall of Fame posters with captions, arrows and dots
+8. **How it works:** 3 steps
+9. **Final call to action:** "Ready for the next stage?" + the WhatsApp button
+10. **Footer:** main website link, "Nothing you tap here is stored.", ©
+
+- **Phones:** a WhatsApp bar slides up from the bottom once the main button has scrolled away, and hides at the final call to action.
+- **Desktop:** a phone-width page centred on a navy background.
 
 `noindex, nofollow`. No form; nothing is stored.
 
-**Tested with no scrolling:** 360×640, 360×560, 390×844, 390×700, 430×932, 1366×768, 1920×1080. Only on a landscape phone (640×360) does the card scroll inside itself, and the button is still visible.
+**Tested:** screen 1 fits with nothing hidden at 360×640, 360×560, 390×844, 390×700, 430×932, 1366×768 and 1920×1080. The whole page is about 2.2 to 3.4 screen heights.
 
 ## Files
 ```
 international-site/
 ├── index.html      ← the page (Meta Pixel base code in <head>)
 ├── css/styles.css  ← all styles (colours as CSS variables at the top)
-├── js/config.js    ← EDIT HERE: Pixel ID, WhatsApp number + message, levels, posters, testimonials
-├── js/main.js      ← posters strip, level chips, WhatsApp link, Lead event, testimonial rotation, utm pass-through
-├── assets/         ← favicons + img/ (WebP: 6 posters, 5 testimonial photos, logo; 140 KB in total)
+├── js/config.js    ← EDIT HERE: Pixel ID, WhatsApp number + message, levels, posters + captions, steps, testimonials
+├── js/main.js      ← level chips, WhatsApp links, Lead event, testimonials, gallery, steps, sticky bar, utm pass-through
+├── assets/         ← favicons + img/ (WebP: 6 posters, 5 testimonial photos, logo; about 210 KB in total, posters lazy-loaded)
 ├── vercel.json     ← clean URLs, security headers, noindex header, 30-day asset cache
 ├── .vercelignore   ← keeps this README off the live site
 └── README.md       ← this file
@@ -47,7 +53,7 @@ The level line is left out if no level is tapped, so the button always works.
 
 ## Meta Pixel
 - **ID:** `4022027848040743`. It's in `js/config.js`, and also in the `<noscript>` image in `index.html`, so change both.
-- **Events:** `PageView` on load (with an event_id), and **`Lead` only when the WhatsApp button is tapped** (with an event_id, `content_name: "International debating"` and `level`). Never on page load.
+- **Events:** `PageView` on load (with an event_id), and **`Lead` only when a WhatsApp button is tapped** (main, final or sticky), with an event_id, `content_name: "International debating"`, `level` and `button`. Never on page load.
 - **How to check:** use the **Meta Pixel Helper** extension (`PageView` on load, `Lead` after tapping the button), or **Events Manager → Test Events**.
 - **utm / fbclid:** the "Main website" links copy any `utm_*` and `fbclid` from the ad URL onto https://cognasiumindia.com/.
 

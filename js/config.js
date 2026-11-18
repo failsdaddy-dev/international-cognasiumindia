@@ -27,14 +27,21 @@ window.PAGE_CONFIG = {
     { id: "advanced", label: "Advanced",       message: "Advanced, looking to maximise wins" }
   ],
 
-  /* Our students' wins: posters from the Wall of Fame (sliding strip) */
+  /* Our students' wins: Wall of Fame posters (swipe gallery below the first screen) */
   wins: [
-    { img: "assets/img/fame-rishi-wsc-globals.webp",   alt: "Rishi Pinapatruni: Gold in Team Debate, Scholar's Bowl and Individual Debate, World Scholar's Cup Globals 2026" },
-    { img: "assets/img/fame-asia-novice-wsdc.webp",    alt: "Miraya Chitkara, Shagun Sheokand and Riti Jain: Asia Schools Novice WSDC Under-18 Champions" },
-    { img: "assets/img/fame-kabir-john-locke.webp",    alt: "Kabir Kapadia: shortlisted, John Locke Institute Global Essay Prize 2026" },
-    { img: "assets/img/fame-ariav-cambridge.webp",     alt: "Ariav Kamat: Honourable Mention, Cambridge Re:Think Essay Competition 2026" },
-    { img: "assets/img/fame-intertext-apd.webp",       alt: "Ariav Kamat, Keyan Khan and Arshiya Gupta: international break at Intertext Schools Asian Parliamentary Debate" },
-    { img: "assets/img/fame-rishi-wsc-bangalore.webp", alt: "Rishi Pinapatruni: Gold and Silver medals at the World Scholar's Cup" }
+    { img: "assets/img/fame-rishi-wsc-globals.webp",   title: "Rishi Pinapatruni",        text: "World Scholar's Cup Globals 2026: Gold in Team Debate, Scholar's Bowl and Individual Debate" },
+    { img: "assets/img/fame-asia-novice-wsdc.webp",    title: "Asia Schools Novice WSDC", text: "Under-18 Champions: Miraya Chitkara, Shagun Sheokand and Riti Jain" },
+    { img: "assets/img/fame-intertext-apd.webp",       title: "Intertext Schools APD",    text: "International breaks for Ariav Kamat, Keyan Khan and Arshiya Gupta" },
+    { img: "assets/img/fame-kabir-john-locke.webp",    title: "Kabir Kapadia",            text: "Shortlisted, John Locke Institute Global Essay Prize 2026" },
+    { img: "assets/img/fame-ariav-cambridge.webp",     title: "Ariav Kamat",              text: "Honourable Mention, Cambridge Re:Think Essay Competition 2026" },
+    { img: "assets/img/fame-rishi-wsc-bangalore.webp", title: "World Scholar's Cup",      text: "Rishi Pinapatruni: Gold in collaborative writing, Silver in team debate" }
+  ],
+
+  /* How it works (from the main site) */
+  steps: [
+    { title: "Message us on WhatsApp", text: "Tell us your child's grade and how much debating they've done." },
+    { title: "Train for 3 months",     text: "Live online classes with a specialist coach." },
+    { title: "Debate internationally", text: "Your child's first international tournament. We form the team, find the tournament and register you." }
   ],
 
   /* All five published testimonials: short excerpts, word for word, with their published photos */

@@ -22,7 +22,7 @@
   <!-- Settings first: the Pixel ID is read from js/config.js -->
   <script src="js/config.js"></script>
 
-  <!-- Meta Pixel Code: PageView on load (with an event_id). Lead is sent from js/main.js on the WhatsApp tap. -->
+  <!-- Meta Pixel Code: PageView on load (with an event_id). Lead is sent from js/main.js when any WhatsApp button is tapped. -->
   <script>
   !function(f,b,e,v,n,t,s)
   {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -45,65 +45,108 @@
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="wa-path" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></symbol></svg>
 
-  <main class="card" id="card">
+  <main class="page" id="page">
 
-    <!-- 1. YELLOW HERO (same look as cognasiumindia.com) -->
-    <section class="hero">
-      <div class="top">
-        <span class="brand">
-          <img src="assets/img/logo-96.webp" width="44" height="44" alt="Cognasium India logo">
-          <span class="wordmark"><b>COGNASIUM</b><small>India</small></span>
-        </span>
-        <a class="main-link js-main-site" href="https://cognasiumindia.com/">Main website</a>
-      </div>
-      <ul class="chips" aria-label="Programme">
-        <li class="live"><i aria-hidden="true"></i>LIVE ONLINE</li>
-        <li>INTERNATIONAL DEBATING</li>
+    <!-- ================= SCREEN 1: everything needed to convert, no scrolling ================= -->
+    <div class="screen" id="screen">
+
+      <!-- 1. Yellow hero (same look as cognasiumindia.com) + proof bar -->
+      <div class="head">
+      <section class="hero">
+        <div class="top">
+          <span class="brand">
+            <img src="assets/img/logo-96.webp" width="44" height="44" alt="Cognasium India logo">
+            <span class="wordmark"><b>COGNASIUM</b><small>India</small></span>
+          </span>
+          <a class="main-link js-main-site" href="https://cognasiumindia.com/">Main website</a>
+        </div>
+        <ul class="chips" aria-label="Programme">
+          <li class="live"><i aria-hidden="true"></i>LIVE ONLINE</li>
+          <li>INTERNATIONAL DEBATING</li>
+        </ul>
+        <h1 class="headline">Already debating at school? <span class="accent">Take it international.</span></h1>
+        <p class="lead">Live online training with a specialist coach, then your child's first international tournament.</p>
+      </section>
+
+      <!-- 2. Proof bar (published claims) -->
+      <ul class="proofbar" aria-label="Why Cognasium">
+        <li><b>🏆 World Champion</b><span>trained by us</span></li>
+        <li><b class="nowrap">APD&#8239;·&#8239;BPD&#8239;·&#8239;WSDC</b><span>formats</span></li>
+        <li><b>Team + tournament</b><span>we register you</span></li>
       </ul>
-      <h1 class="headline">Already debating at school? <span class="accent">Take it international.</span></h1>
-    </section>
-
-    <!-- 2. PROOF BAR (published claims) -->
-    <ul class="proofbar" aria-label="Why Cognasium">
-      <li><b>🏆 World Champion</b><span>trained by us (WSDC 2025)</span></li>
-      <li><b>APD · BPD · WSDC</b><span>formats we coach</span></li>
-      <li><b>Team + tournament</b><span>we register you</span></li>
-    </ul>
-
-    <!-- 3. OUR STUDENTS' WINS (sliding posters; the only part that shrinks on short screens) -->
-    <section class="wins" aria-label="Our students' wins">
-      <p class="label">OUR STUDENTS' WINS</p>
-      <div class="wins-track" id="wins"></div>
-    </section>
-
-    <!-- 4. ONE QUESTION -->
-    <fieldset class="levels">
-      <legend>Which level is your child? <small>(optional)</small></legend>
-      <div class="level-grid" id="levels"></div>
-    </fieldset>
-
-    <!-- 5. THE BUTTON -->
-    <a class="btn-wa" id="wa-btn" href="https://wa.me/919220636572" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#wa-path"/></svg>
-      <span>Message us on WhatsApp</span>
-    </a>
-
-    <!-- 6. ALL FIVE TESTIMONIALS (rotating, with photos) -->
-    <figure class="quote" id="quote">
-      <div class="faces" id="faces" aria-label="Choose a review"></div>
-      <div class="quote-body" aria-live="polite">
-        <blockquote id="q-text"></blockquote>
-        <figcaption id="q-name"></figcaption>
       </div>
-    </figure>
 
-    <!-- 7. FOOTER -->
+      <!-- 3. One question (optional) -->
+      <fieldset class="levels">
+        <legend>Which level is your child? <small>(optional)</small></legend>
+        <div class="level-grid" id="levels"></div>
+      </fieldset>
+
+      <!-- 4. The button -->
+      <div class="cta">
+      <a class="btn-wa js-wa" id="wa-btn" data-place="main" href="https://wa.me/919220636572" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#wa-path"/></svg>
+        <span>Message us on WhatsApp</span>
+      </a>
+      <p class="reply-note">Usually the quickest way to reach us</p>
+      </div>
+
+      <!-- 5. All five testimonials, rotating, with photos -->
+      <figure class="quote" id="quote">
+        <div class="faces" id="faces" aria-label="Choose a review"></div>
+        <div class="quote-body" aria-live="polite">
+          <blockquote id="q-text"></blockquote>
+          <figcaption id="q-name"></figcaption>
+        </div>
+      </figure>
+
+      <a class="scroll-cue" href="#wins-title"><span>See our students' wins</span><i aria-hidden="true">↓</i></a>
+    </div>
+
+    <!-- ================= BELOW THE FOLD: about one more screen ================= -->
+
+    <!-- 6. Students' wins: swipe gallery -->
+    <section class="block wins" aria-labelledby="wins-title">
+      <h2 class="section-label" id="wins-title">OUR STUDENTS' WINS</h2>
+      <div class="gallery" id="gallery" tabindex="0" aria-label="Achievement posters, swipe to see more"></div>
+      <div class="gallery-nav">
+        <button type="button" class="nav-btn" id="g-prev" aria-label="Previous poster">←</button>
+        <span class="dots" id="g-dots" aria-hidden="true"></span>
+        <button type="button" class="nav-btn" id="g-next" aria-label="Next poster">→</button>
+      </div>
+    </section>
+
+    <!-- 7. How it works -->
+    <section class="block how" aria-labelledby="how-title">
+      <h2 class="section-label" id="how-title">HOW IT WORKS</h2>
+      <ol class="steps" id="steps"></ol>
+    </section>
+
+    <!-- 8. Final call to action -->
+    <section class="block final" aria-labelledby="final-title">
+      <h2 class="final-title" id="final-title">Ready for the <span>next stage?</span></h2>
+      <p>Tell us your child's grade and how much debating they've done. We'll take it from there.</p>
+      <a class="btn-wa js-wa" data-place="final" href="https://wa.me/919220636572" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#wa-path"/></svg>
+        <span>Message us on WhatsApp</span>
+      </a>
+    </section>
+
+    <!-- 9. Footer -->
     <footer class="foot">
       <a class="js-main-site" href="https://cognasiumindia.com/">Visit our main website</a>
       <span>Nothing you tap here is stored.</span>
       <span>© <span id="year">2026</span> Cognasium India</span>
     </footer>
   </main>
+
+  <!-- Sticky WhatsApp bar (phones, after the first screen) -->
+  <div class="sticky" id="sticky" aria-hidden="true">
+    <a class="btn-wa btn-sm js-wa" data-place="sticky" href="https://wa.me/919220636572" target="_blank" rel="noopener" tabindex="-1">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#wa-path"/></svg>
+      <span>Message us on WhatsApp</span>
+    </a>
+  </div>
 
   <script src="js/main.js" defer></script>
 </body>
