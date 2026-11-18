@@ -1,0 +1,173 @@
+/* Cognasium India — international debating ad landing page (one screen, no scroll) */
+:root {
+  --c-yellow: #FFD51F;
+  --c-yellow-dark: #C9A300;
+  --c-navy: #00174D;
+  --c-navy-2: #0B2E7A;
+  --c-cream: #FFF8E1;
+  --c-border: #D9DFEC;
+  --c-muted: #3D4B6E;
+  --wa: #25D366;
+  --wa-dark: #0E6B34;
+  --f-display: "Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* vertical rhythm scales with screen height so everything fits */
+  --gap: clamp(5px, 1.25dvh, 14px);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: var(--f-body); color: var(--c-navy); background: var(--c-navy);
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+}
+img { display: block; max-width: 100%; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--c-yellow); outline-offset: 3px; border-radius: 6px; }
+
+/* ---------- The card: full screen on phones, centred phone-width card on desktop ---------- */
+.card {
+  height: 100dvh; width: 100%; margin: 0 auto;
+  display: flex; flex-direction: column; gap: var(--gap);
+  padding: clamp(8px, 1.6dvh, 18px) 16px max(clamp(8px, 1.4dvh, 16px), env(safe-area-inset-bottom));
+  background: var(--c-cream);
+  overflow-y: auto;            /* safe fallback: only scrolls if the screen is shorter than the content */
+  overscroll-behavior: contain;
+}
+.card > * { flex-shrink: 0; }
+
+/* 1. top bar */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand img { width: clamp(30px, 5dvh, 42px); height: auto; }
+.wordmark { display: flex; flex-direction: column; line-height: 1; }
+.wordmark b { font-family: var(--f-display); font-weight: 800; letter-spacing: .08em; font-size: 15px; }
+.wordmark small { font-size: 11px; font-weight: 700; color: var(--c-muted); }
+.main-link { font-size: 13px; font-weight: 800; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; padding: 0 2px; }
+
+/* hero photo: the only flexible block, it shrinks (or disappears) on short screens */
+.hero-img {
+  flex: 1 1 0; min-height: 0; max-height: 30dvh; margin: 0; position: relative;
+  border-radius: 14px; overflow: hidden; border: 2.5px solid var(--c-navy); background: var(--c-yellow);
+}
+.hero-img img { width: 100%; height: 100%; object-fit: cover; object-position: 60% 30%; }
+.live {
+  position: absolute; left: 10px; bottom: 10px; display: inline-flex; align-items: center; gap: 6px;
+  background: var(--c-navy); color: #fff; font-size: 11px; font-weight: 800; letter-spacing: .1em;
+  padding: 4px 9px; border-radius: 999px;
+}
+.live i { width: 8px; height: 8px; border-radius: 50%; background: #FF4D4D; animation: pulse 1.6s ease-in-out infinite; }
+
+/* 2 + 3 headline */
+.headline {
+  margin: 0; font-family: var(--f-display); font-weight: 800; font-stretch: 78%;
+  text-transform: uppercase; line-height: .98; letter-spacing: -.005em;
+  font-size: clamp(25px, min(8.4vw, 4.7dvh), 40px);
+}
+.headline span {
+  display: inline; background: linear-gradient(transparent 12%, var(--c-yellow) 12%, var(--c-yellow) 92%, transparent 92%);
+  box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 0 4px;
+}
+.lead { margin: 0; font-weight: 700; color: var(--c-muted); font-size: clamp(13px, min(3.7vw, 2.1dvh), 16px); line-height: 1.35; }
+
+/* 4 proof chips */
+.proof { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.proof li {
+  font-size: clamp(11px, min(3.1vw, 1.75dvh), 13px); font-weight: 800; background: #fff;
+  border: 1.5px solid var(--c-navy); border-radius: 999px; padding: 3px 9px; white-space: nowrap;
+}
+
+/* 5 level chips */
+.levels { border: 0; margin: 0; padding: 0; min-width: 0; }
+.levels legend { padding: 0; margin-bottom: 6px; font-weight: 800; font-size: clamp(13px, min(3.8vw, 2.1dvh), 16px); }
+.level-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.level {
+  min-height: 44px; padding: 6px 4px; border-radius: 12px; cursor: pointer;
+  border: 2px solid var(--c-navy); background: #fff; color: var(--c-navy);
+  font: inherit; text-align: center; line-height: 1.1;
+  box-shadow: 0 3px 0 var(--c-navy); transition: transform .12s ease, box-shadow .12s ease, background .15s ease;
+}
+.level b { display: block; font-size: clamp(12.5px, min(3.6vw, 2dvh), 15px); font-weight: 800; }
+.level small { display: block; margin-top: 2px; font-size: clamp(10.5px, min(2.9vw, 1.6dvh), 12px); font-weight: 700; color: var(--c-muted); }
+.level:hover { transform: translateY(-1px); }
+.level[aria-pressed="true"] { background: var(--c-navy); color: #fff; transform: translateY(3px); box-shadow: 0 0 0 var(--c-navy); }
+.level[aria-pressed="true"] small { color: var(--c-yellow); }
+.level[aria-pressed="true"] b::before { content: "✓ "; color: var(--c-yellow); }
+
+/* 6 primary 3D WhatsApp button (navy text on yellow) */
+.btn-wa {
+  position: relative; overflow: hidden; isolation: isolate;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: clamp(50px, 7.4dvh, 62px); padding: 10px 18px; border-radius: 14px;
+  background: var(--c-yellow); color: var(--c-navy); text-decoration: none;
+  border: 2.5px solid var(--c-navy);
+  font-family: var(--f-display); font-weight: 800; font-stretch: 85%; text-transform: uppercase;
+  font-size: clamp(17px, min(5vw, 2.8dvh), 22px); letter-spacing: .02em;
+  box-shadow: 0 6px 0 var(--c-navy), 0 10px 18px rgba(0, 23, 77, .25);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.btn-wa svg { width: 26px; height: 26px; flex: none; color: var(--wa-dark); }
+.btn-wa:hover { transform: translateY(-2px); box-shadow: 0 8px 0 var(--c-navy), 0 14px 22px rgba(0, 23, 77, .28); }
+.btn-wa:active { transform: translateY(6px); box-shadow: 0 0 0 var(--c-navy), 0 2px 6px rgba(0, 23, 77, .2); }
+.btn-wa::after { /* shine loop */
+  content: ""; position: absolute; inset: -40% auto -40% -60%; width: 40%; z-index: -1;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .75), transparent);
+  transform: skewX(-20deg); animation: shine 3.2s ease-in-out infinite;
+}
+
+/* 7 rotating testimonial */
+.quote {
+  margin: 0; display: grid; grid-template-columns: 40px 1fr; gap: 10px; align-items: center;
+  background: #fff; border: 1.5px solid var(--c-border); border-radius: 12px; padding: 8px 10px;
+  min-height: clamp(58px, 9dvh, 76px);
+  transition: opacity .45s ease;
+}
+.quote.fading { opacity: 0; }
+.quote img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--c-yellow); object-fit: cover; }
+.quote blockquote {
+  margin: 0; font-size: clamp(12px, min(3.4vw, 1.9dvh), 14.5px); font-weight: 700; line-height: 1.3;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.quote figcaption { font-size: 11.5px; font-weight: 800; color: var(--c-muted); margin-top: 2px; }
+
+/* 8 footer */
+.foot {
+  margin-top: auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 12px;
+  font-size: 11px; font-weight: 700; color: var(--c-muted); text-align: center;
+}
+.foot a { font-weight: 800; color: var(--c-navy); }
+
+/* ---------- Short screens (e.g. 360x640 with browser bars, landscape phones) ---------- */
+@media (max-height: 600px) {
+  .lead { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .level small { display: none; }
+}
+@media (max-height: 520px) {
+  .hero-img { display: none; }
+  .proof li:nth-child(3) { display: none; }
+}
+
+/* ---------- Desktop / tablet: centred phone-width card on a branded background ---------- */
+@media (min-width: 600px) {
+  body {
+    display: grid; place-items: center; min-height: 100dvh; padding: 2dvh 16px;
+    background:
+      radial-gradient(circle at 12% 18%, rgba(255, 213, 31, .35) 0 120px, transparent 121px),
+      radial-gradient(circle at 88% 82%, rgba(255, 213, 31, .25) 0 170px, transparent 171px),
+      radial-gradient(circle at 85% 12%, rgba(255, 255, 255, .06) 0 90px, transparent 91px),
+      var(--c-navy);
+  }
+  .card {
+    width: min(440px, 100%); height: min(96dvh, 900px);
+    border-radius: 24px; border: 3px solid var(--c-yellow);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
+    padding-left: 20px; padding-right: 20px;
+  }
+}
+
+/* ---------- Motion ---------- */
+@keyframes shine { 0%, 55% { left: -60%; } 100% { left: 130%; } }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.8); } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .btn-wa:hover, .level:hover { transform: none; }
+}
