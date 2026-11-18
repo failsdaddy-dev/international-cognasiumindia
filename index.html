@@ -2,37 +2,27 @@
 <html lang="en-IN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Debate Internationally | Live Online Debate Training | Cognasium India</title>
-  <meta name="description" content="Live online debate training for school students with a specialist coach. Three months of preparation, then your child's first international tournament. Cognasium India.">
-
-  <!-- Ad landing page (international.cognasiumindia.com): kept out of Google; the main site is the indexed page. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Already debating at school? Take it international. | Cognasium India</title>
+  <meta name="description" content="Live online debate training with a specialist coach, then your child's first international tournament. Message Cognasium India on WhatsApp.">
+  <!-- Ad-only page: kept out of Google. The main site (cognasiumindia.com) is the indexed page. -->
   <meta name="robots" content="noindex, nofollow">
-  <link rel="canonical" href="https://cognasiumindia.com/">
-
-  <!-- Open Graph (WhatsApp / Facebook link preview). Replace og-image.jpg with a final 1200x630 image. -->
-  <meta property="og:type" content="website">
   <meta property="og:title" content="Already debating at school? Take it international. | Cognasium India">
-  <meta property="og:description" content="Live online debate training with a specialist coach, then your child's first international tournament.">
+  <meta property="og:description" content="Live online debate training. Message us on WhatsApp.">
   <meta property="og:image" content="https://cognasiumindia.com/assets/img/og-image.jpg">
-  <meta property="og:url" content="https://international.cognasiumindia.com/">
-  <meta property="og:locale" content="en_IN">
   <meta name="theme-color" content="#FFD51F">
 
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
   <link rel="apple-touch-icon" href="assets/favicon-180.png">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,700;12..96,75..100,800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
-  <link rel="preload" as="image" href="assets/img/hero-coach.jpg">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/animations.css">
 
-  <!-- ============================================================
-       META PIXEL: PageView on load. "Lead" on every WhatsApp button tap (js/main.js, end of file).
-       ============================================================ -->
-  <!-- Meta Pixel Code -->
+  <!-- Settings first: the Pixel ID is read from js/config.js -->
+  <script src="js/config.js"></script>
+
+  <!-- Meta Pixel Code: PageView on load (with an event_id). Lead is sent from js/main.js on the WhatsApp tap. -->
   <script>
   !function(f,b,e,v,n,t,s)
   {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -42,228 +32,79 @@
   t.src=v;s=b.getElementsByTagName(e)[0];
   s.parentNode.insertBefore(t,s)}(window, document,'script',
   'https://connect.facebook.net/en_US/fbevents.js');
-  fbq('init', '4022027848040743');
-  fbq('track', 'PageView');
+  if (window.PAGE_CONFIG && PAGE_CONFIG.pixelId) {
+    fbq('init', PAGE_CONFIG.pixelId);
+    fbq('track', 'PageView', {}, { eventID: 'pv-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) });
+  }
   </script>
-  <noscript><img height="1" width="1" style="display:none"
+  <noscript><img height="1" width="1" style="display:none" alt=""
   src="https://www.facebook.com/tr?id=4022027848040743&ev=PageView&noscript=1"
   /></noscript>
   <!-- End Meta Pixel Code -->
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="wa-path" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></symbol></svg>
-  <a class="skip-link" href="#quiz">Skip to the questions</a>
 
-  <!-- 1. HEADER -->
-  <header class="site-header" id="site-header">
-    <div class="header-inner">
-      <a class="brand" href="#top" aria-label="Cognasium India, back to top">
-        <img class="brand-logo" data-src-from="brand.logo" data-alt-from="brand.logoAlt" width="56" height="56" alt="">
-        <span class="brand-text">
-          <strong data-text="brand.wordmarkTop"></strong>
-          <span data-text="brand.wordmarkBottom"></span>
+  <main class="card" id="card">
+
+    <!-- 1. YELLOW HERO (same look as cognasiumindia.com) -->
+    <section class="hero">
+      <div class="top">
+        <span class="brand">
+          <img src="assets/img/logo-96.webp" width="44" height="44" alt="Cognasium India logo">
+          <span class="wordmark"><b>COGNASIUM</b><small>India</small></span>
         </span>
-      </a>
-      <a class="btn btn-3d btn-sm header-cta" id="header-wa" href="#" target="_blank" rel="noopener">
-        <svg class="wa-ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#wa-path"/></svg>
-        <span>WhatsApp us</span>
-      </a>
-    </div>
-    <div class="scroll-progress" aria-hidden="true"><i id="scroll-progress"></i></div>
-  </header>
-
-  <main id="top">
-    <!-- 2. HERO -->
-    <section class="hero band-yellow" aria-labelledby="hero-title">
-      <!-- Decorative floating shapes (purely visual, hidden from screen readers) -->
-      <div class="hero-deco" aria-hidden="true">
-        <span class="bubble b1"><i></i><i></i><i></i></span>
-        <span class="bubble b2 alt">?</span>
-        <span class="bubble b3">!</span>
-        <span class="bubble b4 alt"><i></i><i></i><i></i></span>
-        <span class="ring r1"></span>
-        <span class="ring r2"></span>
-        <span class="spark s1"></span>
-        <span class="spark s2"></span>
-        <span class="spark s3"></span>
-        <svg class="globe" viewBox="0 0 64 64"><circle cx="32" cy="32" r="28"/><ellipse cx="32" cy="32" rx="12" ry="28"/><path d="M4 32h56M8 18h48M8 46h48"/></svg>
-        <svg class="mic" viewBox="0 0 64 64"><rect x="22" y="6" width="20" height="32" rx="10"/><path d="M14 30a18 18 0 0 0 36 0M32 48v10M22 58h20"/></svg>
+        <a class="main-link js-main-site" href="https://cognasiumindia.com/">Main website</a>
       </div>
-      <div class="wrap hero-grid">
-        <div class="hero-copy">
-          <h1 id="hero-title" class="display hero-title"></h1>
-          <ul class="chips" id="hero-chips" aria-label="Key facts"></ul>
-          <p class="hero-lead" data-text="hero.lead"></p>
-          <p class="hero-small" data-text="hero.small"></p>
-        </div>
-        <figure class="hero-photo" id="hero-photo">
-          <img data-src-from="hero.image" data-alt-from="hero.imageAlt" width="800" height="818" alt="">
-        </figure>
-      </div>
+      <ul class="chips" aria-label="Programme">
+        <li class="live"><i aria-hidden="true"></i>LIVE ONLINE</li>
+        <li>INTERNATIONAL DEBATING</li>
+      </ul>
+      <h1 class="headline">Already debating at school? <span class="accent">Take it international.</span></h1>
     </section>
 
-    <!-- Moving ribbon of real Cognasium programmes -->
-    <div class="marquee" aria-hidden="true"><div class="marquee-track" id="marquee-track"></div></div>
+    <!-- 2. PROOF BAR (published claims) -->
+    <ul class="proofbar" aria-label="Why Cognasium">
+      <li><b>🏆 World Champion</b><span>trained by us (WSDC 2025)</span></li>
+      <li><b>APD · BPD · WSDC</b><span>formats we coach</span></li>
+      <li><b>Team + tournament</b><span>we register you</span></li>
+    </ul>
 
-    <!-- 2b. QUESTION FLOW (+ optional countdown) -->
-    <section class="quiz band-navy2 on-dark" id="quiz" aria-labelledby="quiz-q-title">
-      <div class="wrap narrow">
-
-        <!-- Countdown: only rendered when js/config.js has a future session -->
-        <div class="session-card" id="session-card" hidden>
-          <div class="session-head"><span class="dot" aria-hidden="true"></span><span id="session-head-text"></span></div>
-          <div class="session-body">
-            <div><span class="session-k">GRADES</span><strong class="display session-grades" id="session-grades"></strong></div>
-            <div class="session-time">
-              <strong class="display" id="session-label"></strong>
-              <span class="seat-badge" id="session-seats" hidden></span>
-            </div>
-          </div>
-          <div class="session-foot" aria-live="off">Booking closes in <b id="session-countdown"></b></div>
-        </div>
-
-        <div class="quiz-progress" aria-hidden="true">
-          <span class="bar"><i id="quiz-bar"></i></span>
-        </div>
-
-        <div class="quiz-stage" id="quiz-stage">
-          <!-- Step 1 -->
-          <div class="quiz-step is-active" id="step-1" role="group" aria-labelledby="q1-title">
-            <p class="eyebrow" id="q1-label"></p>
-            <h2 class="quiz-title" id="q1-title"></h2>
-            <div class="tile-grid tile-grid-2" id="q1-options"></div>
-          </div>
-
-          <!-- Step 2 -->
-          <div class="quiz-step" id="step-2" role="group" aria-labelledby="q2-title" hidden>
-            <p class="eyebrow" id="q2-label"></p>
-            <h2 class="quiz-title" id="q2-title"></h2>
-            <div class="tile-grid tile-grid-4" id="q2-options"></div>
-            <p class="quiz-foot" id="q2-foot"></p>
-            <button type="button" class="link-btn" id="q2-back">&larr; Back</button>
-          </div>
-
-          <!-- Result -->
-          <div class="quiz-step" id="step-3" hidden>
-            <div class="result-card" tabindex="-1" id="result-card">
-              <div class="result-head"><span class="check" aria-hidden="true">&#10003;</span><span id="result-label"></span></div>
-              <div class="result-body">
-                <h2 class="display result-title" id="result-title"></h2>
-                <p id="result-text"></p>
-                <ul class="answer-chips" id="result-answers"></ul>
-                <a class="btn btn-3d btn-shine btn-block" id="result-wa" href="#" target="_blank" rel="noopener">
-                  <svg class="wa-ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#wa-path"/></svg>
-                  <span id="result-btn-text"></span>
-                </a>
-                <button type="button" class="link-btn dark" id="quiz-restart"></button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- 3. OUR STUDENTS' WINS (sliding posters; the only part that shrinks on short screens) -->
+    <section class="wins" aria-label="Our students' wins">
+      <p class="label">OUR STUDENTS' WINS</p>
+      <div class="wins-track" id="wins"></div>
     </section>
 
-    <!-- 3. WHAT YOU GET -->
-    <section class="band-navy on-dark section" aria-labelledby="wyg-title">
-      <div class="wrap">
-        <h2 class="section-label" id="wyg-title" data-text="whatYouGet.heading"></h2>
-        <div class="wyg-grid" id="wyg-cards"></div>
-      </div>
-    </section>
+    <!-- 4. ONE QUESTION -->
+    <fieldset class="levels">
+      <legend>Which level is your child? <small>(optional)</small></legend>
+      <div class="level-grid" id="levels"></div>
+    </fieldset>
 
-    <!-- 3d. PROGRAMMES / PRICING -->
-    <section class="band-yellow section" id="pricing" aria-labelledby="pricing-title" hidden>
-      <div class="wrap">
-        <h2 class="section-label" id="pricing-title" data-text="pricing.label"></h2>
-        <p class="section-intro" data-text="pricing.intro"></p>
-        <div class="price-grid single" id="price-grid"></div>
-        <article class="paper-card concessions" id="concessions" hidden></article>
-        <p class="fine" data-text="pricing.footnote"></p>
-      </div>
-    </section>
+    <!-- 5. THE BUTTON -->
+    <a class="btn-wa" id="wa-btn" href="https://wa.me/919220636572" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#wa-path"/></svg>
+      <span>Message us on WhatsApp</span>
+    </a>
 
-    <!-- 3c. PROBLEM + WHO WE TRAIN / SAMPLE FEEDBACK -->
-    <section class="band-navy2 on-dark section" aria-labelledby="problem-title">
-      <div class="wrap narrow">
-        <h2 class="display problem-title" id="problem-title"></h2>
-        <p class="problem-text" data-text="problem.text"></p>
-        <article class="paper-card" id="who-card"></article>
-        <article class="paper-card" id="sample-card" hidden></article>
+    <!-- 6. ALL FIVE TESTIMONIALS (rotating, with photos) -->
+    <figure class="quote" id="quote">
+      <div class="faces" id="faces" aria-label="Choose a review"></div>
+      <div class="quote-body" aria-live="polite">
+        <blockquote id="q-text"></blockquote>
+        <figcaption id="q-name"></figcaption>
       </div>
-    </section>
+    </figure>
 
-    <!-- 3f. TESTIMONIALS -->
-    <section class="band-cream section" aria-labelledby="t-title">
-      <div class="wrap">
-        <h2 class="section-label" id="t-title" data-text="testimonials.heading"></h2>
-        <div class="t-grid" id="testimonials"></div>
-      </div>
-    </section>
-
-    <!-- 3d2. WALL OF FAME -->
-    <section class="band-navy on-dark section" id="wall-of-fame" aria-labelledby="fame-title">
-      <div class="wrap">
-        <h2 class="section-label" id="fame-title" data-text="wallOfFame.heading"></h2>
-        <p class="section-intro" data-text="wallOfFame.intro"></p>
-        <ul class="fame-grid" id="fame-grid"></ul>
-        <figure class="fame-schools">
-          <img data-src-from="wallOfFame.schools.img" data-alt-from="wallOfFame.schools.alt" loading="lazy" width="1045" height="1280" alt="">
-          <figcaption data-text="wallOfFame.schools.caption"></figcaption>
-        </figure>
-      </div>
-    </section>
-
-    <!-- 3g. FAQ -->
-    <section class="band-cream section faq-section" aria-labelledby="faq-title">
-      <div class="wrap narrow">
-        <h2 class="section-label" id="faq-title" data-text="faq.heading"></h2>
-        <div class="faq" id="faq"></div>
-      </div>
-    </section>
-
-    <!-- 3h. FINAL CTA -->
-    <section class="band-navy2 on-dark section final" aria-labelledby="final-title">
-      <div class="wrap narrow center">
-        <h2 class="display final-title" id="final-title"></h2>
-        <p data-text="finalCta.text"></p>
-        <div class="cta-pulse">
-        <a class="btn btn-3d btn-block btn-shine" id="final-wa" href="#" target="_blank" rel="noopener">
-          <svg class="wa-ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#wa-path"/></svg>
-          <span data-text="finalCta.button"></span>
-        </a>
-        </div>
-        <a class="call-link" id="final-call" href="#"></a>
-      </div>
-    </section>
+    <!-- 7. FOOTER -->
+    <footer class="foot">
+      <a class="js-main-site" href="https://cognasiumindia.com/">Visit our main website</a>
+      <span>Nothing you tap here is stored.</span>
+      <span>© <span id="year">2026</span> Cognasium India</span>
+    </footer>
   </main>
 
-  <!-- 4. FOOTER -->
-  <footer class="site-footer on-dark">
-    <div class="wrap footer-grid">
-      <div>
-        <img class="footer-logo" data-src-from="brand.logo" data-alt-from="brand.logoAlt" loading="lazy" width="64" height="64" alt="">
-        <p class="footer-name" data-text="brand.name"></p>
-      </div>
-      <ul class="footer-list" id="footer-contacts"></ul>
-      <ul class="footer-list" id="footer-social"></ul>
-    </div>
-    <p class="wrap copyright" id="copyright"></p>
-  </footer>
-
-  <!-- Sticky WhatsApp bar (mobile) -->
-  <div class="sticky-wa" id="sticky-wa">
-    <div class="sticky-copy"><strong data-text="whatsapp.stickyLabel"></strong><span data-text="whatsapp.stickyNote"></span></div>
-    <a class="btn btn-3d btn-sm btn-wa" id="sticky-wa-btn" href="#" target="_blank" rel="noopener" aria-label="Chat with Cognasium on WhatsApp">
-      <svg class="wa-ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#wa-path"/></svg>
-      <span>WhatsApp</span>
-    </a>
-  </div>
-
-  <noscript>
-    <p class="noscript">Please message Cognasium India on WhatsApp: <a href="https://wa.me/919220636572">+91 92206 36572</a></p>
-  </noscript>
-
-  <script src="js/config.js"></script>
   <script src="js/main.js" defer></script>
 </body>
 </html>
