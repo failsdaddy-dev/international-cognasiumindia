@@ -1,0 +1,13 @@
+# Secrets: never commit
+.env
+.env.*
+!.env.example
+
+# Vercel CLI
+.vercel/
+
+# OS / editor clutter
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/

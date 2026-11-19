@@ -6,25 +6,50 @@
    ===================================================================== */
 window.PAGE_CONFIG = {
 
-  /* Meta Pixel. PageView on load (index.html <head>), Lead ONLY when the
-     WhatsApp button is tapped. The <noscript> image in index.html also has
-     the ID (it cannot read this file): change both. */
+  /* Meta Pixel. PageView on load (index.html <head>). Lead ONLY after the
+     enquiry form has been sent successfully (the server said yes).
+     The <noscript> image in index.html also has the ID (it cannot read this
+     file): change both. */
   pixelId: "4022027848040743",
 
-  whatsapp: {
-    number: "919220636572",   // +91 92206 36572, digits only
-    // {levelLine} becomes "My child's level: …" or is removed if no level is tapped
-    message:
-      "Hi Cognasium! I saw your ad about international debating.\n" +
-      "{levelLine}" +
-      "Please share the details of the programme."
+  /* Enquiry form. Sent to /api/lead, which emails the client.
+     The ids below must match api/lead.js (ROLES, GRADES, LEVELS): the server
+     is what really enforces them. */
+  form: {
+    endpoint: "/api/lead",
+    roles: [
+      { id: "parent",  label: "Parent / guardian" },
+      { id: "student", label: "Student" },
+      { id: "other",   label: "Other" }
+    ],
+    grades: ["5", "6", "7", "8", "9", "10", "11", "12"],   // same grades as the main site's grade question
+    messages: {
+      studentStop:  "Thanks for your interest! Please ask your parent or guardian to fill in this form.",
+      role:         "Please choose who is filling in this form.",
+      adult:        "Please confirm you are 18 or older, or ask a parent or guardian to fill in this form.",
+      grade:        "Please choose your child's grade.",
+      name:         "Enter your full name (letters only).",
+      mobile:       "Enter a valid 10-digit mobile number.",
+      email:        "Enter an email you check (not a temporary one).",
+      city:         "City: letters only, or leave it empty.",
+      consent:      "Please tick the box so we can contact you.",
+      level:        "Please choose a level again.",
+      sending:      "Sending…",
+      failed:       "Sorry, your enquiry didn't go through. Please try again in a moment.",
+      offline:      "This form can only be sent from the live page.",
+      captcha:      "We couldn't confirm you're a person. Please wait a moment and try again.",
+      tooFast:      "Please check your details, then press the button again.",
+      expired:      "This page was open for a long time. Please press the button again.",
+      duplicate:    "We already have an enquiry with this mobile number or email. The team will be in touch.",
+      rateLimited:  "Too many tries from this connection. Please try again later."
+    }
   },
 
-  /* "Which level is your child?" (from the main site's recommendation card) */
+  /* "Which level is your child?" (from the main site's recommendation card). Optional. */
   levels: [
-    { id: "beginner", label: "Beginner",       message: "Beginner (no debating experience yet)" },
-    { id: "school",   label: "School debater", message: "Has debated at school or local tournaments" },
-    { id: "advanced", label: "Advanced",       message: "Advanced, looking to maximise wins" }
+    { id: "beginner", label: "Beginner" },
+    { id: "school",   label: "School debater" },
+    { id: "advanced", label: "Advanced" }
   ],
 
   /* Our students' wins: Wall of Fame posters (swipe gallery below the first screen) */
@@ -39,7 +64,7 @@ window.PAGE_CONFIG = {
 
   /* How it works (from the main site) */
   steps: [
-    { title: "Message us on WhatsApp", text: "Tell us your child's grade and how much debating they've done." },
+    { title: "Send the short form",     text: "Tell us your child's grade and how much debating they've done." },
     { title: "Train for 3 months",     text: "Live online classes with a specialist coach." },
     { title: "Debate internationally", text: "Your child's first international tournament. We form the team, find the tournament and register you." }
   ],
