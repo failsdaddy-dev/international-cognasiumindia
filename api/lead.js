@@ -3,8 +3,10 @@
    GET  /api/lead  ·  public form settings (Turnstile site key + a signed
                       start time used for the minimum-fill-time check)
 
-   Vercel Node.js function. No npm packages: Resend, Cloudflare Turnstile
-   and Upstash Redis are all called with fetch.
+   Vercel Node.js function, no npm packages. It checks everything, verifies
+   Cloudflare Turnstile, then hands the lead to the Google Apps Script in
+   google-apps-script/Code.gs, which emails it (free, from the client's own
+   Google account) and saves a row in a Google Sheet.
 
    Every setting comes from environment variables (see README / .env.example).
    Logs never contain names, phone numbers or email addresses.
@@ -21,12 +23,11 @@ const FIELDS = new Set(["role", "adult", "grade", "level", "name", "mobile", "em
   "website", "ts", "sig", "token", "page"].concat(UTM));
 
 /* ---------- limits ---------- */
-const MIN_FILL_MS   = 4000;              // faster than this = a bot
-const MAX_AGE_MS    = 6 * 3600 * 1000;   // form start time older than this = reload
-const IP_LIMIT      = 5;                 // submissions per IP ...
-const IP_WINDOW_S   = 3600;              // ... per hour
-const DUP_WINDOW_S  = 24 * 3600;         // same mobile or email again within 24 h = duplicate
-const MAX_BODY      = 4000;              // bytes
+const MIN_FILL_MS = 4000;              // faster than this = a bot
+const MAX_AGE_MS  = 6 * 3600 * 1000;   // form start time older than this = press again
+const IP_LIMIT    = 5;                 // sends per IP per hour (this server instance; the Apps Script also checks)
+const IP_WINDOW   = 3600 * 1000;
+const MAX_BODY    = 4000;              // bytes
 
 /* Small list of throwaway-email domains. Add more here when you see them. */
 const DISPOSABLE = new Set([
@@ -43,13 +44,9 @@ const DISPOSABLE = new Set([
 /* ---------- helpers ---------- */
 function env(k) { return (process.env[k] || "").trim(); }
 function allowAdultStudents() { return env("ALLOW_ADULT_STUDENTS").toLowerCase() === "true"; }
-function hmac(s) { return crypto.createHmac("sha256", env("FORM_SECRET")).update(String(s)).digest("hex"); }
-function hashId(s) { return hmac("id:" + s).slice(0, 32); }          // phone / email / IP are never stored in clear
+function hmac(s) { return crypto.createHmac("sha256", env("LEAD_SECRET")).update(String(s)).digest("hex"); }
 function reply(res, status, body) { res.setHeader("Cache-Control", "no-store"); res.status(status).json(body); }
 function fail(res, status, error, field) { reply(res, status, field ? { ok: false, error, field } : { ok: false, error }); }
-function esc(s) {
-  return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; });
-}
 function clean(v) { return typeof v === "string" ? v.normalize("NFC").replace(/\s+/g, " ").trim() : null; }
 function clientIp(req) {
   const xf = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim();
@@ -91,36 +88,13 @@ function validEmail(e) {
 function validCity(c) { return c === "" || (c.length <= 40 && /^[\p{L}\p{M} .'-]+$/u.test(c)); }
 function safeExtra(v, max) { return typeof v === "string" && v.length <= max && !/[\u0000-\u001F\u007F]/.test(v); }
 
-/* ---------- rate-limit store: Upstash Redis if connected, otherwise this instance's memory ---------- */
-const mem = new Map();
-function store() {
-  const url = env("KV_REST_API_URL") || env("UPSTASH_REDIS_REST_URL");
-  const token = env("KV_REST_API_TOKEN") || env("UPSTASH_REDIS_REST_TOKEN");
-  return url && token ? { url: url.replace(/\/$/, ""), token } : null;
-}
-async function redis(cmds) {
-  const s = store();
-  const r = await fetch(s.url + "/pipeline", {
-    method: "POST", headers: { Authorization: "Bearer " + s.token, "Content-Type": "application/json" }, body: JSON.stringify(cmds)
-  });
-  if (!r.ok) throw new Error("store_" + r.status);
-  return (await r.json()).map(function (x) { return x.result; });
-}
-function memGet(k) { const v = mem.get(k); if (v && v.exp > Date.now()) return v; mem.delete(k); return null; }
-async function countHit(key, windowS) {
-  if (store()) return Number((await redis([["SET", key, "0", "EX", String(windowS), "NX"], ["INCR", key]]))[1]);
-  const v = memGet(key) || { n: 0, exp: Date.now() + windowS * 1000 };
-  v.n++; mem.set(key, v);
-  if (mem.size > 5000) mem.clear();
-  return v.n;
-}
-async function anyExists(keys) {
-  if (store()) return (await redis(keys.map(function (k) { return ["EXISTS", k]; }))).some(function (x) { return Number(x) > 0; });
-  return keys.some(function (k) { return !!memGet(k); });
-}
-async function markAll(keys, windowS) {
-  if (store()) { await redis(keys.map(function (k) { return ["SET", k, "1", "EX", String(windowS)]; })); return; }
-  keys.forEach(function (k) { mem.set(k, { n: 1, exp: Date.now() + windowS * 1000 }); });
+/* ---------- quick per-instance IP limit (free, no database) ---------- */
+const hits = new Map();
+function tooMany(ipHash) {
+  const now = Date.now(), list = (hits.get(ipHash) || []).filter(function (t) { return now - t < IP_WINDOW; });
+  list.push(now); hits.set(ipHash, list);
+  if (hits.size > 5000) hits.clear();
+  return list.length > IP_LIMIT;
 }
 
 /* ---------- Cloudflare Turnstile ---------- */
@@ -134,55 +108,30 @@ async function captchaOk(token, ip) {
   return j.success === true;
 }
 
-/* ---------- the email ---------- */
-function buildEmail(d) {
+/* ---------- hand over to the Google Apps Script (emails + saves to the Sheet) ---------- */
+async function deliver(d, ipHash) {
   const ist = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" });
-  const rows = [
-    ["Filled in by", ROLES[d.role]],
-    ["Parent or guardian name", d.name],
-    ["Mobile", "+91 " + d.mobile.slice(0, 5) + " " + d.mobile.slice(5)],
-    ["Email", d.email],
-    ["Child's grade", "Grade " + d.grade],
-    ["Level", LEVELS[d.level]],
-    ["City", d.city || "Not given"],
-    ["Time (IST)", ist],
-    ["Page", d.page || "Not given"]
-  ];
-  UTM.forEach(function (k) { if (d[k]) rows.push([k, d[k]]); });
-
-  const html =
-    '<div style="font-family:Arial,Helvetica,sans-serif;color:#00174D;max-width:560px">' +
-    '<h2 style="margin:0 0 12px;font-size:18px">New international debating enquiry</h2>' +
-    '<table cellpadding="8" cellspacing="0" style="border-collapse:collapse;width:100%;font-size:14px">' +
-    rows.map(function (r, i) {
-      return '<tr style="background:' + (i % 2 ? "#ffffff" : "#FFF8E1") + '">' +
-        '<th align="left" style="border:1px solid #D9DFEC;width:38%;font-weight:bold">' + esc(r[0]) + "</th>" +
-        '<td style="border:1px solid #D9DFEC">' + esc(r[1]) + "</td></tr>";
-    }).join("") +
-    "</table>" +
-    '<p style="font-size:13px;color:#3D4B6E;margin:14px 0 0">Press Reply to answer the parent directly. ' +
-    "Sent from the form on international.cognasiumindia.com.</p></div>";
-  const text = "New international debating enquiry\n\n" +
-    rows.map(function (r) { return r[0] + ": " + r[1]; }).join("\n") +
-    "\n\nPress Reply to answer the parent directly.";
-  return { subject: "New international debating enquiry - " + d.name, html, text };
-}
-async function sendEmail(d, idemKey) {
-  const mail = buildEmail(d);
-  const to = env("LEAD_TO_EMAIL").split(",").map(function (s) { return s.trim(); }).filter(Boolean);
-  const r = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: "Bearer " + env("RESEND_API_KEY"), "Content-Type": "application/json", "Idempotency-Key": idemKey },
-    body: JSON.stringify({ from: env("LEAD_FROM_EMAIL"), to, reply_to: d.email, subject: mail.subject, html: mail.html, text: mail.text })
+  const lead = {
+    filledInBy: ROLES[d.role], name: d.name, mobile: "+91 " + d.mobile.slice(0, 5) + " " + d.mobile.slice(5),
+    mobileKey: d.mobile, email: d.email, grade: "Grade " + d.grade, level: LEVELS[d.level], city: d.city || "",
+    timeIst: ist, page: d.page || ""
+  };
+  UTM.forEach(function (k) { lead[k] = d[k] || ""; });
+  const r = await fetch(env("APPS_SCRIPT_URL"), {
+    method: "POST", redirect: "follow",                              // Apps Script answers through a redirect
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ secret: env("LEAD_SECRET"), ipHash, lead }),
+    signal: AbortSignal.timeout(25000)
   });
-  return r.status;
+  if (!r.ok) return { ok: false, error: "http_" + r.status };
+  try { return JSON.parse(await r.text()); } catch (e) { return { ok: false, error: "bad_reply" }; }
 }
 
 /* ---------- handler ---------- */
 module.exports = async function handler(req, res) {
   res.setHeader("X-Robots-Tag", "noindex, nofollow");
 
-  const configured = ["RESEND_API_KEY", "LEAD_TO_EMAIL", "LEAD_FROM_EMAIL", "TURNSTILE_SITE_KEY", "TURNSTILE_SECRET_KEY", "FORM_SECRET"]
+  const configured = ["APPS_SCRIPT_URL", "LEAD_SECRET", "TURNSTILE_SITE_KEY", "TURNSTILE_SECRET_KEY"]
     .every(function (k) { return !!env(k); });
   if (!configured) { console.error("lead: not_configured"); return fail(res, 503, "not_configured"); }
 
@@ -246,28 +195,22 @@ module.exports = async function handler(req, res) {
     d[k] = b[k];
   }
 
-  const ip = clientIp(req);
-  const dupKeys = ["lead:dup:m:" + hashId(d.mobile), "lead:dup:e:" + hashId(d.email)];
-  try {
-    /* 6. Rate limit per IP */
-    if (await countHit("lead:ip:" + hashId(ip), IP_WINDOW_S) > IP_LIMIT) return fail(res, 429, "rate_limited");
-  } catch (e) { console.error("lead: store_error"); }                // store down: carry on, never lose a lead
+  /* 6. Rate limit per IP (quick check here; the Apps Script keeps the hour-long count) */
+  const ip = clientIp(req), ipHash = hmac("ip:" + ip).slice(0, 32);
+  if (tooMany(ipHash)) return fail(res, 429, "rate_limited");
 
   /* 7. CAPTCHA, verified with Cloudflare */
   let human = false;
   try { human = await captchaOk(b.token, ip); } catch (e) { console.error("lead: captcha_unreachable"); }
   if (!human) return fail(res, 403, "captcha");
 
-  /* 8. Same mobile or email already sent recently */
-  try { if (await anyExists(dupKeys)) return fail(res, 409, "duplicate"); }
-  catch (e) { console.error("lead: store_error"); }
-
-  /* 9. Send */
-  let status = 0;
-  try { status = await sendEmail(d, "lead-" + hashId(d.mobile + "|" + ts)); }
-  catch (e) { console.error("lead: send_error"); return fail(res, 502, "send_failed"); }
-  if (status < 200 || status >= 300) { console.error("lead: send_failed status=" + status); return fail(res, 502, "send_failed"); }
-
-  try { await markAll(dupKeys, DUP_WINDOW_S); } catch (e) { console.error("lead: store_error"); }
-  return reply(res, 200, { ok: true });
+  /* 8. Email + Sheet (the Apps Script also rejects repeats of the same mobile or email within 24 hours) */
+  let out;
+  try { out = await deliver(d, ipHash); }
+  catch (e) { console.error("lead: script_unreachable"); return fail(res, 502, "send_failed"); }
+  if (out && out.ok === true) return reply(res, 200, { ok: true });
+  if (out && out.error === "duplicate") return fail(res, 409, "duplicate");
+  if (out && out.error === "rate_limited") return fail(res, 429, "rate_limited");
+  console.error("lead: send_failed " + String((out && out.error) || "unknown").replace(/[^a-z0-9_]/gi, "").slice(0, 30));
+  return fail(res, 502, "send_failed");
 };

@@ -1,17 +1,23 @@
 # Cognasium India: international debating ad page
 
 A **short page** for the Meta ad ("Already debating at school? Take it international.").
-It's a very short version of https://cognasiumindia.com/ in the same yellow and navy design, with one programme (international debating), all testimonials, our students' photos and a **2-step enquiry form that emails the lead to the client**.
+It's a very short version of https://cognasiumindia.com/ in the same yellow and navy design, with one programme (international debating), all testimonials, our students' photos and a **2-step enquiry form that emails the lead to the client and saves it in a Google Sheet, for free**.
 
 - **Why the form (Nov 2026):** the old WhatsApp button brought junk: random messages, photos and voice notes, mostly from children. The client asked for enquiries by email from a form instead. All WhatsApp has been removed.
 - **This folder:** `C:\Agents\cognasiumindia-site\international-site\`
 - **GitHub:** https://github.com/failsdaddy-dev/international-cognasiumindia
 - **Address (once connected):** https://international.cognasiumindia.com/
 - **Hosting:** its own Vercel project (separate from the main site in `..\main-site\`)
-- Plain HTML, CSS and vanilla JS, plus **one serverless function** (`api/lead.js`). No framework, no build step, no npm packages.
+- Plain HTML, CSS and vanilla JS, plus **one serverless function** (`api/lead.js`) and **one Google Apps Script** (`google-apps-script/Code.gs`). No framework, no build step, no npm packages, **no paid services**.
 - **The site is no longer purely static.** The page still opens by double-clicking `index.html`, but the form can only send from Vercel (or `vercel dev`).
 
 ---
+
+## How a lead travels (all free)
+```
+form ──► /api/lead (Vercel) ──────────► Google Apps Script ──► ✉ email to the client
+         every check + Turnstile        secret + repeat check   + 📄 row in the "Leads" Google Sheet
+```
 
 ## Layout
 **Screen 1: no scrolling on any phone or desktop:**
@@ -35,15 +41,16 @@ It's a very short version of https://cognasiumindia.com/ in the same yellow and 
 international-site/
 ├── index.html      ← the page (Meta Pixel base code in <head>)
 ├── privacy.html    ← privacy notice linked from the consent box and footer
-├── api/lead.js     ← GET: form settings · POST: checks + sends the lead email (Resend)
+├── api/lead.js     ← GET: form settings · POST: every check + Turnstile, then hands the lead to the Apps Script
+├── google-apps-script/Code.gs ← paste into the Google Sheet's Apps Script: emails the lead + saves a row (not deployed to Vercel)
 ├── css/styles.css  ← all styles (colours as CSS variables at the top)
 ├── js/config.js    ← EDIT HERE: Pixel ID, form roles + grades + messages, levels, posters, steps, testimonials
 ├── js/main.js      ← form steps + validation + sending, Lead event, fit-to-screen, testimonials, gallery, sticky bar, utm pass-through
 ├── assets/         ← favicons + img/ (WebP)
-├── vercel.json     ← clean URLs, security headers, noindex, asset cache, no-store on /api
-├── .env.example    ← every environment variable, empty (copy to .env.local)
+├── vercel.json     ← clean URLs, security headers, noindex, asset cache, no-store on /api, 30 s function limit
+├── .env.example    ← every Vercel environment variable, empty (copy to .env.local)
 ├── .gitignore      ← keeps .env / .env.local / .vercel out of git
-├── .vercelignore   ← keeps README and .env.example off the live site
+├── .vercelignore   ← keeps README, .env.example and the Apps Script off the live site
 └── README.md       ← this file
 ```
 Roles, grades and levels are listed in **both** `js/config.js` (what the page shows) and `api/lead.js` (what the server accepts). Change both.
@@ -63,21 +70,24 @@ The browser checks everything first, then **the server checks it all again** (th
 | Honeypot | Hidden "website" field; filled in = rejected |
 | Fill time | The server signs a start time; sent in under 4 seconds = rejected (older than 6 hours = "press again") |
 | CAPTCHA | Cloudflare Turnstile, invisible unless it needs a tap; verified on the server |
-| Rate limit | 5 sends per hour per IP; the same mobile **or** email again within 24 hours = "We already have an enquiry…" |
+| Rate limit | 5 sends per hour per connection; the same mobile **or** email again within 24 hours = "We already have an enquiry…" |
 | Request shape | Same-origin only (no CORS), JSON only, max 4 KB, unknown fields rejected |
-| Email safety | Every value is HTML-escaped; no images or tracking pixels in the email |
+| Apps Script | Only accepts posts carrying `LEAD_SECRET`, so nobody can bypass the checks by posting to it directly |
+| Email / Sheet safety | Every value is HTML-escaped in the email; cells starting with `= + - @` or a digit are saved as plain text, never as formulas |
 
-**Rate-limit storage:** Vercel functions keep no memory between requests. With **Upstash Redis** connected, the limits are reliable. Without it they only last for one warm server instance, so they're easy to get round. Phone, email and IP are stored only as hashes, never in clear.
+**Rate limits without a database:** repeat mobiles and emails are found by looking at the last 500 rows of the Google Sheet. The per-connection count is kept for an hour in Apps Script's free cache, plus a quick in-memory count on Vercel. IP addresses are never stored, only a scrambled (hashed) form in that one-hour cache.
 
-**Logs:** only error types (`lead: send_failed status=…`, `lead: captcha_unreachable`, `lead: store_error`, `lead: not_configured`). Never names, phones or emails.
+**Logs:** only error types (`lead: send_failed …`, `lead: captcha_unreachable`, `lead: script_unreachable`, `lead: not_configured`). Never names, phones or emails.
 
 **Honest limit:** no form can prove someone is a parent. These checks stop bots, children tapping around, fake numbers and repeat sends. They don't verify who someone is.
 
 ## The email
-- **To:** `LEAD_TO_EMAIL` · **From:** `LEAD_FROM_EMAIL` · **Reply-To:** the parent's email (just press Reply)
+- **Sent from:** the Google account that owns the Sheet (shown as "Cognasium Enquiries") · **To:** `LEAD_TO_EMAIL` (a Script property, not in the code) · **Reply-To:** the parent's email (just press Reply)
 - **Subject:** `New international debating enquiry - <parent name>`
-- **Table:** filled in by, parent name, mobile, email, child's grade, level, city, time (IST), page, plus utm_source / utm_medium / utm_campaign / utm_content / utm_term / fbclid when present
-- No backup copy and no confirmation email to the parent (not asked for yet).
+- **Table:** filled in by, parent name, mobile, email, child's grade, level, city, time (IST), page, plus utm_source / utm_medium / utm_campaign / utm_content / utm_term / fbclid when present. No images or tracking.
+- **Backup:** every lead is also a row in the Sheet, so nothing is lost if an email lands in spam.
+- **Free limit:** I understand Google lets a script send about **100 emails a day** from a normal Gmail account and about **1,500 a day** from Google Workspace (please check, Google may change it). That's one email per lead.
+- No confirmation email to the parent (not asked for).
 - **If sending fails:** the parent sees "Sorry, your enquiry didn't go through. Please try again in a moment." The button comes back, and **no Lead event fires**.
 
 ## Meta Pixel
@@ -87,23 +97,37 @@ The browser checks everything first, then **the server checks it all again** (th
 - **Test with Meta Pixel Helper (Chrome extension):** open the live page → PageView ✓ → fill in both steps and send → after the thank-you panel appears, Lead ✓ (once). Try a bad mobile number: no Lead.
 - **Test Events:** Events Manager → your Pixel → **Test events** → enter `https://international.cognasiumindia.com/` → **Open website** → send a real enquiry → Lead appears within a minute or so.
 - No Conversions API.
-- **utm / fbclid:** passed to the "Main website" links, and included in the lead email.
+- **utm / fbclid:** passed to the "Main website" links, and included in the lead email and Sheet.
 
-## Environment variables
-Set them in **Vercel → Project → Settings → Environment Variables** (Production, and Preview if you test previews). Use the same names in a local `.env.local` (git-ignored) for `vercel dev`. The function refuses to run (503) until the first six are set.
+## Environment variables (Vercel)
+Set them in **Vercel → Project → Settings → Environment Variables** (Production, and Preview if you test previews). Use the same names in a local `.env.local` (git-ignored) for `vercel dev`. The function refuses to run (503) until the first four are set.
 
-| Name | What | Example / where to get it |
+| Name | What | Where to get it |
 |---|---|---|
-| `RESEND_API_KEY` | Resend API key, "Sending access" | resend.com → API Keys |
-| `LEAD_TO_EMAIL` | Who receives leads (comma-separate for more) | the client's address |
-| `LEAD_FROM_EMAIL` | Sender on the verified domain | `Cognasium Enquiries <leads@cognasiumindia.com>` |
+| `APPS_SCRIPT_URL` | The Apps Script web app address (ends in `/exec`) | Apps Script → Deploy → Manage deployments |
+| `LEAD_SECRET` | Any long random string; **the same value** goes into the Apps Script's Script properties | e.g. `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 | `TURNSTILE_SITE_KEY` | Turnstile site key (public) | Cloudflare → Turnstile → Add widget |
 | `TURNSTILE_SECRET_KEY` | Turnstile secret key | same widget |
-| `FORM_SECRET` | Any long random string | e.g. run `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 | `ALLOW_ADULT_STUDENTS` | `true` lets 18+ students submit; empty = parents only | leave empty |
-| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Upstash Redis (optional, recommended) | added automatically by Vercel → Storage → Upstash |
+
+**Apps Script → Project Settings → Script properties:** `LEAD_SECRET` (same value as in Vercel) and `LEAD_TO_EMAIL` (who receives the leads; comma-separate for more).
 
 **For local testing only**, Cloudflare publishes test keys that always pass: site key `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA`. Never use them in Production.
+
+## Setup steps (once, all free, no DNS change)
+**A. Google Sheet + Apps Script.** Sign in to the Google account that should send the emails, ideally the client's.
+1. Create a Google Sheet called **Cognasium leads**. **File → Settings → Time zone: (GMT+05:30) Kolkata**.
+2. **Extensions → Apps Script.** Delete what's there, paste all of `google-apps-script/Code.gs`, **Save**.
+3. **Project Settings (⚙):** Time zone **Asia/Kolkata**. **Script properties → Add**: `LEAD_SECRET` = your random string, `LEAD_TO_EMAIL` = the client's email.
+4. Back in the **Editor**, choose **testEmail** in the function list → **Run** → allow the permissions Google asks for. It may say "Google hasn't verified this app": **Advanced → Go to … (unsafe)** (it's your own script). A test email should arrive, and a **Leads** tab appears in the Sheet.
+5. **Deploy → New deployment → ⚙ Web app.** Execute as: **Me**. Who has access: **Anyone**. **Deploy** → copy the **Web app URL** (ends in `/exec`).
+6. **If you edit the script later:** Deploy → Manage deployments → ✏ → Version: **New version** → Deploy (the URL stays the same).
+
+**B. Cloudflare Turnstile** (free Cloudflare account, no DNS change): **Turnstile → Add widget**, hostname `international.cognasiumindia.com` (add `localhost` for `vercel dev`), mode **Managed** → copy the site key and secret key.
+
+**C. Vercel:** add the 4 variables above → **Redeploy** (env changes only apply to new deployments).
+
+**D. First time on Vercel** (if not done yet): **Add New → Project** → import `failsdaddy-dev/international-cognasiumindia`, Framework **Other**, no build command → Deploy → **Settings → Domains** → `international.cognasiumindia.com` → Hostinger: **CNAME** `international` → the value Vercel shows.
 
 ## Run it locally (with the form working)
 ```
@@ -113,17 +137,8 @@ vercel link        (pick the international-cognasiumindia project)
 copy .env.example .env.local   (then fill in the values)
 vercel dev
 ```
-Open http://localhost:3000/. The form sends real emails through Resend, so use your own email in `LEAD_TO_EMAIL` while testing.
+Open http://localhost:3000/. Sends are real: they go to `LEAD_TO_EMAIL` and the Sheet (delete test rows afterwards).
 Just looking at the layout: double-click `index.html`, or `python -m http.server 8766` and open http://127.0.0.1:8766/ (sending won't work there).
-
-## Setup steps (once)
-1. **Resend:** sign up → **Domains → Add domain** → `cognasiumindia.com` (region: closest to India). Resend shows 3 or 4 DNS records: a DKIM **TXT** (`resend._domainkey`), and an **MX** + SPF **TXT** on the `send` subdomain.
-2. **Hostinger DNS:** add **exactly** the records Resend shows (Type, Name, Value, TTL 300). They live on `send.` and `resend._domainkey`, so **the Google mail records (MX on @) are not touched**. Then click **Verify** in Resend.
-3. **Resend API key:** **API Keys → Create**, permission "Sending access", domain cognasiumindia.com.
-4. **Cloudflare Turnstile** (a free Cloudflare account is enough, no DNS change): **Turnstile → Add widget**, hostname `international.cognasiumindia.com` (add `localhost` for `vercel dev`), widget mode **Managed** → copy the site key and secret key.
-5. **Upstash (recommended):** Vercel → this project → **Storage → Create / Marketplace → Upstash (Redis)**, free plan, connect to the project. This adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` itself.
-6. **Vercel env vars:** add the variables above → **Redeploy** (env changes only apply to new deployments).
-7. **First time on Vercel** (if not done yet): **Add New → Project** → import `failsdaddy-dev/international-cognasiumindia`, Framework **Other**, no build command → Deploy → **Settings → Domains** → `international.cognasiumindia.com` → Hostinger: **CNAME** `international` → the value Vercel shows.
 
 ## Manual test checklist
 - [ ] No scrolling needed on screen 1, both steps: 360×640, 390×844, 430×932, 1366×768, 1920×1080 (step 2 on 360×640 hides the testimonial and proof bar to make room)
@@ -132,9 +147,9 @@ Just looking at the layout: double-click `index.html`, or `python -m http.server
 - [ ] Back keeps step 1's answers
 - [ ] Step 2 errors: name `A1`, mobile `9999999999` / `1234567890` / `5123456789`, email `x@mailinator.com`, consent unticked
 - [ ] Keyboard only: Tab through everything, Enter submits each step, errors are read out
-- [ ] Real send → email arrives with the full table, Reply goes to the parent's email
+- [ ] Real send → email arrives with the full table, Reply goes to the parent's email, a row appears in the Sheet
 - [ ] Same mobile again → "We already have an enquiry…" and no Lead
-- [ ] Failed send (e.g. set a wrong `RESEND_API_KEY` on a Preview) → calm error + retry, no Lead
+- [ ] Failed send (e.g. a wrong `LEAD_SECRET` on a Preview) → calm error + retry, no Lead, no row
 - [ ] Pixel Helper: PageView on load; Lead once, only after the thank-you panel
 - [ ] Search the page and source: no WhatsApp anywhere
 - [ ] /privacy works and the link opens in a new tab
@@ -143,13 +158,14 @@ Just looking at the layout: double-click `index.html`, or `python -m http.server
 Edit the files, then `git add -A`, `git commit -m "…"` and `git push`.
 - **Commit author:** commits must be authored by `failsdaddy-dev` (already set in this repo).
 - **Images:** `/assets/*` is cached for 30 days, so give a replaced image a new file name.
+- **Apps Script changes** are not deployed by Vercel: paste the new `Code.gs` and deploy a **New version** (setup step A6).
 - **Never commit** `.env.local` or any key.
 
 ## Still missing / to approve
-- Client email address for `LEAD_TO_EMAIL`, and the sender address
-- Resend account + DNS records, Turnstile keys, Upstash (optional)
+- Client email address for `LEAD_TO_EMAIL`, and which Google account owns the Sheet (it sends the emails)
+- Turnstile keys
 - **Grade range:** using 5 to 12 (the main site's grade question). The ad's "4 to 8" is still unclear.
 - Whether students 18+ may submit (currently parents only), and whether "Other" should be allowed (currently yes)
 - **Wording to approve:** "Goes straight to the Cognasium India team. No payment needed." · thank-you "What happens next: the team will reply to the email address or mobile number you gave us." (add a timeframe?) · the privacy notice text and its deletion contact (cognasiumindia@gmail.com, from the main site)
-- Backup copy of leads and a confirmation email to the parent (both off)
+- Confirmation email to the parent (off)
 - Families' consent for the testimonial and Wall of Fame photos
