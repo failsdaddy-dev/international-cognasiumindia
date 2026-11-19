@@ -14,6 +14,7 @@
   --go-text: #052E16;
   --go-edge: #0E6B34;
   --c-error: #B42318;
+  --c-line: #B3BDD6;      /* soft outline for unselected chips and fields */
   --f-display: "Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
   --f-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
   --gap: clamp(7px, 1.35dvh, 14px);   /* screen-1 spacing scales with screen height */
@@ -111,10 +112,16 @@ a { color: inherit; }
   padding: clamp(6px, 1dvh, 10px) 12px clamp(10px, 1.4dvh, 14px); box-shadow: 0 4px 0 var(--c-navy);
   scroll-margin: 12px;
 }
-.progress { display: flex; align-items: center; gap: 10px; min-height: 26px; margin-bottom: var(--fgap); }
-.progress-label { font-size: 11.5px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+.form-title {
+  margin: 2px 0 2px; font-family: var(--f-display); font-weight: 800; font-stretch: 80%; text-transform: uppercase;
+  font-size: clamp(18px, min(5vw, 2.9dvh), 22px); line-height: 1.05; letter-spacing: .01em;
+}
+[data-step="3"] .form-title { display: none; }
+.progress { display: flex; align-items: center; gap: 10px; min-height: 22px; margin-bottom: var(--fgap); }
+.step1-rest { display: flex; flex-direction: column; gap: var(--fgap); }
+.progress-label { font-size: 11px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; color: var(--c-muted); }
 .progress-label:focus { outline: none; }
-.progress-label:focus-visible { outline: 3px solid var(--c-navy); }
+.progress-label:focus-visible { outline: none; }
 .progress-bar { flex: 1; height: 6px; border-radius: 3px; background: var(--c-border); overflow: hidden; }
 .progress-bar i { display: block; height: 100%; width: 50%; background: var(--c-yellow-dark); border-radius: 3px; transition: width .35s ease; }
 [data-step="2"] .progress-bar i, [data-step="3"] .progress-bar i { width: 100%; }
@@ -135,12 +142,14 @@ a { color: inherit; }
 .field.inline { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 10px; }
 .field.inline label { margin: 0; }
 .field input, .field select {
-  display: block; width: 100%; height: 44px; padding: 0 12px; border: 2px solid var(--c-navy); border-radius: 10px;
+  display: block; width: 100%; height: 44px; padding: 0 12px; border: 2px solid var(--c-line); border-radius: 10px;
   background: #fff; color: var(--c-navy); font: 700 16px var(--f-body); /* 16px stops iPhones zooming in */
 }
 .field select { appearance: none; -webkit-appearance: none; padding-right: 34px; cursor: pointer;
   background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%2300174D' stroke-width='2.5'/%3E%3C/svg%3E") no-repeat right 12px center; }
-.field input:focus, .field select:focus { outline: none; box-shadow: 0 0 0 3px var(--c-yellow); }
+.field input:hover, .field select:hover { border-color: var(--c-muted); }
+.field input:focus, .field select:focus { outline: none; border-color: var(--c-navy); box-shadow: 0 0 0 3px var(--c-yellow); }
+.field select:valid { border-color: var(--c-navy); }
 .field [aria-invalid="true"] { border-color: var(--c-error); }
 .row2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 8px; }
 .tel { position: relative; }
@@ -156,11 +165,12 @@ a { color: inherit; }
 .chip-opt input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
 .chip-opt span {
   display: flex; align-items: center; justify-content: center; text-align: center; min-height: 44px; padding: 4px;
-  border: 2px solid var(--c-navy); border-radius: 12px; background: #fff; box-shadow: 0 3px 0 var(--c-navy);
+  border: 2px solid var(--c-line); border-radius: 12px; background: #fff;
   font-weight: 800; font-size: clamp(12.5px, min(3.5vw, 1.95dvh), 14.5px); line-height: 1.1;
-  transition: background .15s ease, color .15s ease;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
 }
-.chip-opt input:checked + span { background: var(--c-navy); color: var(--c-yellow); }
+.chip-opt:hover span { border-color: var(--c-navy); }
+.chip-opt input:checked + span { background: var(--c-navy); border-color: var(--c-navy); color: var(--c-yellow); box-shadow: 0 3px 0 var(--c-yellow-dark); }
 .chip-opt input:checked + span::before { content: "\2713\00a0"; }
 .chip-opt input:focus-visible + span { outline: 3px solid var(--c-navy); outline-offset: 3px; }
 .chip-opt input[aria-invalid="true"] + span { border-color: var(--c-error); }
@@ -199,12 +209,12 @@ a { color: inherit; }
 .level-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .level {
   min-height: 44px; padding: 4px; border-radius: 12px; cursor: pointer;
-  border: 2px solid var(--c-navy); background: #fff; color: var(--c-navy);
+  border: 2px solid var(--c-line); background: #fff; color: var(--c-navy);
   font: inherit; font-weight: 800; font-size: clamp(13px, min(3.7vw, 2dvh), 15px); line-height: 1.1;
-  box-shadow: 0 3px 0 var(--c-navy); transition: background .15s ease, color .15s ease, transform .12s ease;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
 }
-.level:hover { background: #FFFDF2; transform: translateY(-1px); }
-.level[aria-pressed="true"] { background: var(--c-navy); color: var(--c-yellow); }
+.level:hover { border-color: var(--c-navy); }
+.level[aria-pressed="true"] { background: var(--c-navy); border-color: var(--c-navy); color: var(--c-yellow); box-shadow: 0 3px 0 var(--c-yellow-dark); }
 .level[aria-pressed="true"]::before { content: "✓ "; }
 
 /* --- 4. Big 3D action button (Continue / Request programme details) --- */

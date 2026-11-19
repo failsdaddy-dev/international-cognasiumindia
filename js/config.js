@@ -24,7 +24,7 @@ window.PAGE_CONFIG = {
     ],
     grades: ["5", "6", "7", "8", "9", "10", "11", "12"],   // same grades as the main site's grade question
     messages: {
-      studentStop:  "Thanks for your interest! Please ask your parent or guardian to fill in this form.",
+      studentStop:  "Thanks for your interest! Please ask your parent or guardian to fill in this form. Are you the parent? Tap Parent / guardian above.",
       role:         "Please choose who is filling in this form.",
       adult:        "Please confirm you are 18 or older, or ask a parent or guardian to fill in this form.",
       grade:        "Please choose your child's grade.",

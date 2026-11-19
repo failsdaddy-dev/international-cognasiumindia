@@ -18,6 +18,11 @@
 
   /* ======================= ENQUIRY FORM ======================= */
   var form = $("enquiry"), screen = $("screen"), status = $("form-status");
+
+  /* An ad landing page always opens at the top (no restored scroll position) */
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  if (!location.hash) window.scrollTo(0, 0);
+  function focusQuiet(n) { if (n) { try { n.focus({ preventScroll: true }); } catch (e) { n.focus(); } } }
   var S = { step: 1, level: null, sending: false, sent: false, srv: null, token: null, waiters: [], capStarted: false };
 
   /* --- keep screen 1 on one screen: hide the least important extras, one at a time, until it fits --- */
@@ -57,9 +62,10 @@
   function updateRole() {
     var student = role() === "student";
     $("adult-wrap").hidden = !(student && adultAllowed());
-    var stop = $("student-stop");
-    stop.hidden = !(student && !adultAllowed());
-    stop.textContent = stop.hidden ? "" : M.studentStop;
+    var stop = $("student-stop"), blocked = student && !adultAllowed();
+    stop.hidden = !blocked;
+    stop.textContent = blocked ? M.studentStop : "";
+    $("step1-rest").hidden = blocked;                    /* nothing else to fill in: only the message shows */
     if (!student) { $("adult").checked = false; setErr("adult", ""); }
     refit();
   }
@@ -133,7 +139,7 @@
       else if (!$("adult").checked) bad("adult", M.adult);
     }
     if (!grade.value) bad("grade", M.grade);
-    if (first === "stop") $("student-stop").focus();
+    if (first === "stop") focusQuiet($("student-stop"));
     else if (first) focusField(first);
     return !first;
   }
@@ -153,7 +159,7 @@
     }
     return !first;
   }
-  function focusField(f) { var i = FIELD_INPUT[f] && FIELD_INPUT[f](); if (i) i.focus(); }
+  function focusField(f) { focusQuiet(FIELD_INPUT[f] && FIELD_INPUT[f]()); }
 
   /* Check a field when the person leaves it (only once they've typed something) */
   [["name", function (v) { return okName(tidy(v)); }], ["mobile", function (v) { return okMobile(normMobile(v)); }],
@@ -179,7 +185,7 @@
     say("");
     fit();
     if (n === 2) startCaptcha();
-    if (n === 3) $("done-title").focus(); else $("progress-label").focus();
+    focusQuiet(n === 3 ? $("done-title") : $("progress-label"));
   }
   $("back").addEventListener("click", function () { if (!S.sending) goStep(1, true); });
 
@@ -367,6 +373,9 @@
     new IntersectionObserver(function (e) { st.form = e[0].isIntersecting; syncSticky(); }).observe(form);
     new IntersectionObserver(function (e) { st.final = e[0].isIntersecting; syncSticky(); }).observe(document.querySelector(".final"));
   }
+
+  /* Back to the top once everything is drawn (some browsers restore the old position late) */
+  window.addEventListener("load", function () { if (!location.hash) window.scrollTo(0, 0); });
 
   $("year").textContent = new Date().getFullYear();
 })();

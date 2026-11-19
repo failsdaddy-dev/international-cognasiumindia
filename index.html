@@ -75,7 +75,8 @@
       </div>
 
       <!-- 3. Enquiry form: 2 steps in one card, then a thank-you panel -->
-      <form class="enquiry" id="enquiry" novalidate aria-labelledby="progress-label">
+      <form class="enquiry" id="enquiry" novalidate aria-labelledby="form-title">
+        <h2 class="form-title" id="form-title">Get the programme details</h2>
         <div class="progress">
           <button type="button" class="back" id="back" hidden>&larr; Back</button>
           <span class="progress-label" id="progress-label" tabindex="-1">Step 1 of 2</span>
@@ -95,6 +96,7 @@
           </label>
           <p class="err" id="err-adult"></p>
           <p class="notice" id="student-stop" tabindex="-1" role="status" hidden></p>
+          <div class="step1-rest" id="step1-rest">
           <div class="field inline">
             <label for="grade">Child's grade</label>
             <select id="grade" name="grade" required aria-describedby="err-grade"></select>
@@ -105,6 +107,7 @@
             <div class="level-grid" id="levels"></div>
           </fieldset>
           <button type="submit" class="btn-go" id="next-btn">Continue &rarr;</button>
+          </div>
         </div>
 
         <!-- Step 2: parent's contact details -->
